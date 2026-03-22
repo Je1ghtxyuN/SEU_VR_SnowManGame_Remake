@@ -48,7 +48,17 @@ public class GameRoundManager : MonoBehaviour
     void Start()
     {
         ResetGameState();
-        StartCoroutine(DelayedStart());
+        
+        // 检查是否需要跳过教程
+        if (ButtonFunction.skipTutorialOnReload)
+        {
+            ButtonFunction.skipTutorialOnReload = false; // 重置标志
+            StartCoroutine(SkipTutorialAndStart());
+        }
+        else
+        {
+            StartCoroutine(DelayedStart());
+        }
     }
 
     private void ResetGameState()
@@ -116,6 +126,63 @@ public class GameRoundManager : MonoBehaviour
         }
 
         StartCoroutine(WaitAndStartGameRoutine());
+    }
+
+    private IEnumerator SkipTutorialAndStart()
+    {
+        yield return null; // 等待一帧，确保所有 Awake 方法执行完毕
+        
+        if (spawner == null) 
+        {
+            spawner = FindObjectOfType<AdvancedSnowmanManager>();
+            if (spawner == null)
+            {
+                Debug.LogError("❌ 未找到 AdvancedSnowmanManager！敌人生成将无法进行。");
+            }
+            else
+            {
+#if UNITY_EDITOR
+                Debug.Log($"✅ 找到 AdvancedSnowmanManager: {spawner.gameObject.name}");
+#endif
+            }
+        }
+
+        // --- 从 GameSettings 读取配置 ---
+        if (GameSettings.Instance != null)
+        {
+            isEndlessMode = (GameSettings.Instance.currentDifficulty == DifficultyLevel.Endless);
+
+            if (!isEndlessMode)
+            {
+                currentRoundsConfig = GameSettings.Instance.GetRoundsForCurrentDifficulty();
+#if UNITY_EDITOR
+                Debug.Log($"🔵 已加载难度: {GameSettings.Instance.currentDifficulty}, 总回合数: {currentRoundsConfig.Count}");
+#endif
+            }
+            else
+            {
+#if UNITY_EDITOR
+                Debug.Log("🟣 已启动无尽模式");
+#endif
+            }
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ 未找到 GameSettings，启用默认无尽模式测试");
+            isEndlessMode = true;
+        }
+
+        // 跳过开场语音，立即移除空气墙
+        if (startWall != null)
+        {
+            startWall.SetActive(false);
+#if UNITY_EDITOR
+            Debug.Log("🔓 跳过教程，空气墙已立即移除，玩家可自由移动。");
+#endif
+        }
+
+        // 直接开始第一回合
+        StartCoroutine(StartNextRoundRoutine());
     }
 
     private IEnumerator WaitAndStartGameRoutine()

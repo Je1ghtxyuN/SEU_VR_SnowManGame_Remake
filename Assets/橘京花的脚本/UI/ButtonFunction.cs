@@ -1,10 +1,12 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ButtonFunction : MonoBehaviour
 {
+    public static bool skipTutorialOnReload = false;
+
     [Header("场景设置")]
     [SerializeField] private string sceneToSwitch;
 
@@ -51,6 +53,9 @@ public class ButtonFunction : MonoBehaviour
 
     public void reLoadScene()
     {
+        // 设置跳过教程标志
+        skipTutorialOnReload = true;
+
         // 确保重开游戏时时间是流动的（防止在升级界面暂停时直接重开导致卡住）
         Time.timeScale = 1f;
 
