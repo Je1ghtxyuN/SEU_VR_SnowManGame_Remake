@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 
 public class GameInfoUI : MonoBehaviour
@@ -41,9 +41,9 @@ public class GameInfoUI : MonoBehaviour
     {
         if (infoText != null)
         {
-            if (GameRoundManager.Instance.isGameComplete)
+            if (GameRoundManager.Instance != null && GameRoundManager.Instance.isGameComplete)
             {
-                infoText.text = "<color=green>Mission Compelete！\nGo to the gate</color>";
+                infoText.text = "<color=green>Mission Complete！\nGo to the gate</color>";
             }
             else
             {

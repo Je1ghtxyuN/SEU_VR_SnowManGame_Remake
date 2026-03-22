@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 public class AdvancedSnowmanManager : MonoBehaviour
@@ -55,12 +55,18 @@ public class AdvancedSnowmanManager : MonoBehaviour
         if (spawnPositions.Count == 0)
         {
             Debug.LogWarning("⚠️ 未能生成任何有效的雪人位置。");
-            for (int i = 0; i < count; i++) GameRoundManager.Instance.OnEnemyKilled();
+            for (int i = 0; i < count; i++) 
+            {
+                if (GameRoundManager.Instance != null) GameRoundManager.Instance.OnEnemyKilled();
+            }
             return;
         }
 
         int missingCount = count - spawnPositions.Count;
-        for (int i = 0; i < missingCount; i++) GameRoundManager.Instance.OnEnemyKilled();
+        for (int i = 0; i < missingCount; i++) 
+        {
+            if (GameRoundManager.Instance != null) GameRoundManager.Instance.OnEnemyKilled();
+        }
 
         foreach (Vector3 position in spawnPositions)
         {
@@ -209,6 +215,8 @@ public class AdvancedSnowmanManager : MonoBehaviour
 
     private bool IsValidSpawnPosition(Vector3 position, List<Vector3> existingPositions)
     {
+        if (player == null) return false;
+        
         Vector3 flatPos = new Vector3(position.x, 0, position.z);
         Vector3 flatPlayerPos = new Vector3(player.position.x, 0, player.position.z);
 

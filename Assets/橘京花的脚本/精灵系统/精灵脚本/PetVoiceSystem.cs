@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -56,7 +56,15 @@ public class PetVoiceSystem : MonoBehaviour
 
     void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
         audioSource = GetComponent<AudioSource>();
 
         audioSource.spatialBlend = 1.0f; // 3D 音效
@@ -137,5 +145,11 @@ public class PetVoiceSystem : MonoBehaviour
             }
         }
         isProcessingQueue = false;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+        StopAllCoroutines();
     }
 }

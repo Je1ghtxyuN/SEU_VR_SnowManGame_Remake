@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
 
@@ -162,6 +162,8 @@ public class UpgradeUIManager : MonoBehaviour
             GameObject effect = Instantiate(levelUpEffectPrefab, playerCamera);
             effect.transform.localPosition = new Vector3(0, playerFeetOffset, 0);
             effect.transform.localRotation = Quaternion.identity;
+            // 3秒后自动销毁效果对象，防止内存泄漏
+            Destroy(effect, 3f);
         }
         else
         {
@@ -172,12 +174,12 @@ public class UpgradeUIManager : MonoBehaviour
     public void OnLeftButtonClicked()
     {
         if (currentLeftUpgrade != null) ApplyUpgradeEffect(currentLeftUpgrade);
-        GameRoundManager.Instance.FinishUpgrade();
+        if (GameRoundManager.Instance != null) GameRoundManager.Instance.FinishUpgrade();
     }
 
     public void OnRightButtonClicked()
     {
         if (currentRightUpgrade != null) ApplyUpgradeEffect(currentRightUpgrade);
-        GameRoundManager.Instance.FinishUpgrade();
+        if (GameRoundManager.Instance != null) GameRoundManager.Instance.FinishUpgrade();
     }
 }

@@ -58,7 +58,9 @@ public class GameRoundManager : MonoBehaviour
         isGameComplete = false;
         currentState = GameState.Waiting;
         currentRoundNameDisplay = "";
+#if UNITY_EDITOR
         Debug.Log("🔄 游戏状态已重置");
+#endif
     }
 
     private IEnumerator DelayedStart()
@@ -74,7 +76,9 @@ public class GameRoundManager : MonoBehaviour
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.Log($"✅ 找到 AdvancedSnowmanManager: {spawner.gameObject.name}");
+#endif
             }
         }
 
@@ -86,11 +90,15 @@ public class GameRoundManager : MonoBehaviour
             if (!isEndlessMode)
             {
                 currentRoundsConfig = GameSettings.Instance.GetRoundsForCurrentDifficulty();
+#if UNITY_EDITOR
                 Debug.Log($"🔵 已加载难度: {GameSettings.Instance.currentDifficulty}, 总回合数: {currentRoundsConfig.Count}");
+#endif
             }
             else
             {
+#if UNITY_EDITOR
                 Debug.Log("🟣 已启动无尽模式");
+#endif
             }
         }
         else
@@ -114,13 +122,17 @@ public class GameRoundManager : MonoBehaviour
     {
         if (startWall != null) startWall.SetActive(true);
 
+#if UNITY_EDITOR
         Debug.Log("⏳ 游戏流程：等待新手语音播放 (43秒)...");
+#endif
         yield return new WaitForSeconds(43.0f);
 
         if (startWall != null)
         {
             startWall.SetActive(false);
+#if UNITY_EDITOR
             Debug.Log("🔓 语音结束，空气墙已移除，玩家可自由移动。");
+#endif
         }
 
         StartCoroutine(StartNextRoundRoutine());
@@ -168,7 +180,9 @@ public class GameRoundManager : MonoBehaviour
         int actualSpawnCount = missionTargetCount + extraSpawnCount;
 
         UpdateUI(currentRoundNameDisplay);
+#if UNITY_EDITOR
         Debug.Log($"⚔️ 开始回合: {currentRoundNameDisplay}, 任务目标: {missionTargetCount}, 实际生成: {actualSpawnCount}");
+#endif
 
         if (spawner != null)
         {
@@ -199,7 +213,9 @@ public class GameRoundManager : MonoBehaviour
 
     private void EndRound()
     {
+#if UNITY_EDITOR
         Debug.Log("🟢 回合目标达成！结束回合。");
+#endif
         currentState = GameState.UpgradePhase;
 
         if (spawner != null) spawner.ClearAllSnowmen();
@@ -228,7 +244,9 @@ public class GameRoundManager : MonoBehaviour
 
     private void HandleVictory()
     {
+#if UNITY_EDITOR
         Debug.Log("🏆 游戏通关！");
+#endif
         currentState = GameState.Victory;
         isGameComplete = true;
 
@@ -251,5 +269,6 @@ public class GameRoundManager : MonoBehaviour
     void OnDestroy()
     {
         if (Instance == this) Instance = null;
+        StopAllCoroutines();
     }
 }

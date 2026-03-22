@@ -1,27 +1,27 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets; // Èç¹ûÄãµÄÒÆ¶¯½Å±¾ÔÚSampleÃüÃû¿Õ¼äÏÂ
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½Å±ï¿½ï¿½ï¿½Sampleï¿½ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½
 using UnityEngine.XR.Interaction.Toolkit;
-// ×¢Òâ£ºÈç¹ûÄãÕÒ²»µ½ ActionBasedContinuousMoveProvider£¬Çë¼ì²éÄãµÄ Locomotion ÎïÌåÉÏµÄ×é¼þÃû
+// ×¢ï¿½â£ºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ ActionBasedContinuousMoveProviderï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Locomotion ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 public class PlayerUpgradeHandler : MonoBehaviour
 {
     public static PlayerUpgradeHandler Instance { get; private set; }
 
-    [Header("ÒýÓÃ")]
+    [Header("ï¿½ï¿½ï¿½ï¿½")]
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private PlayerWeaponController weaponController;
     [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets.DynamicMoveProvider moveProvider;
 
 
-    [Header("µ±Ç°ÊôÐÔ")]
+    [Header("ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½")]
     public float damageMultiplier = 1.0f;
     public float speedMultiplier = 1.0f;
-    public int maxAmmoLevel = 0; // µ¯Ò©Âß¼­ÔÝÊ±Ô¤Áô
+    public int maxAmmoLevel = 0; // ï¿½ï¿½Ò©ï¿½ß¼ï¿½ï¿½ï¿½Ê±Ô¤ï¿½ï¿½
 
-    [Header("¾«ÁéÉý¼¶ÊôÐÔ")]
-    public int petProjectileCount = 1;      // ×Óµ¯ÊýÁ¿
-    public float petFireRateMultiplier = 1.0f; // ÉäËÙ±¶ÂÊ 
-    public float petDamageMultiplier = 1.0f;   // ÉËº¦±¶ÂÊ
+    [Header("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")]
+    public int petProjectileCount = 1;      // ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½
+    public float petFireRateMultiplier = 1.0f; // ï¿½ï¿½ï¿½Ù±ï¿½ï¿½ï¿½ 
+    public float petDamageMultiplier = 1.0f;   // ï¿½Ëºï¿½ï¿½ï¿½ï¿½ï¿½
 
     private float initialMoveSpeed = 0f;
 
@@ -33,41 +33,41 @@ public class PlayerUpgradeHandler : MonoBehaviour
 
     void Start()
     {
-        // ×Ô¶¯³¢ÊÔ»ñÈ¡×é¼þ
+        // ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½Ô»ï¿½È¡ï¿½ï¿½ï¿½
         if (playerHealth == null) playerHealth = GetComponent<PlayerHealth>();
 
-        // ³¢ÊÔÔÚ×ÓÎïÌåÖÐÑ°ÕÒ WeaponController (ËüÔÚÓÒÊÖÉÏ)
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ°ï¿½ï¿½ WeaponController (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
         if (weaponController == null) weaponController = GetComponentInChildren<PlayerWeaponController>();
 
-        // ³¢ÊÔÑ°ÕÒÒÆ¶¯½Å±¾ (Í¨³£ÔÚ Locomotion ×ÓÎïÌåÉÏ)
+        // ï¿½ï¿½ï¿½ï¿½Ñ°ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½Å±ï¿½ (Í¨ï¿½ï¿½ï¿½ï¿½ Locomotion ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
         if (moveProvider == null) moveProvider = GetComponentInChildren<UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets.DynamicMoveProvider>();
 
-        // ¼ÇÂ¼³õÊ¼ËÙ¶È
+        // ï¿½ï¿½Â¼ï¿½ï¿½Ê¼ï¿½Ù¶ï¿½
         if (moveProvider != null)
         {
             initialMoveSpeed = moveProvider.moveSpeed;
         }
         else
         {
-            Debug.LogError("Î´ÕÒµ½ÒÆ¶¯¿ØÖÆ½Å±¾ (ActionBasedContinuousMoveProvider)£¬ËÙ¶ÈÉý¼¶½«ÎÞÐ§£¡");
+            Debug.LogError("Î´ï¿½Òµï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½Æ½Å±ï¿½ (ActionBasedContinuousMoveProvider)ï¿½ï¿½ï¿½Ù¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½");
         }
     }
 
-    // --- Éý¼¶Ö´ÐÐ·½·¨ ---
+    // --- ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ð·ï¿½ï¿½ï¿½ ---
 
     public void UpgradeHeal(float amount)
     {
         if (playerHealth != null)
         {
             playerHealth.Heal(amount);
-            Debug.Log($"Íæ¼Ò»Ø¸´ÁË {amount} µãÑªÁ¿");
+            Debug.Log($"ï¿½ï¿½Ò»Ø¸ï¿½ï¿½ï¿½ {amount} ï¿½ï¿½Ñªï¿½ï¿½");
         }
     }
 
     public void UpgradeDamage(float percentage)
     {
-        damageMultiplier += percentage; // ÀýÈç´«Èë 0.2f£¬±¶ÂÊ±äÎª 1.2
-        Debug.Log($"ÉËº¦ÌáÉý£¡µ±Ç°±¶ÂÊ: {damageMultiplier}");
+        damageMultiplier += percentage; // ï¿½ï¿½ï¿½ç´«ï¿½ï¿½ 0.2fï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Îª 1.2
+        Debug.Log($"ï¿½Ëºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½: {damageMultiplier}");
     }
 
     public void UpgradeSpeed(float percentage)
@@ -76,7 +76,7 @@ public class PlayerUpgradeHandler : MonoBehaviour
         {
             speedMultiplier += percentage;
             moveProvider.moveSpeed = initialMoveSpeed * speedMultiplier;
-            Debug.Log($"ËÙ¶ÈÌáÉý£¡µ±Ç°ËÙ¶È: {moveProvider.moveSpeed}");
+            Debug.Log($"ï¿½Ù¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½Ù¶ï¿½: {moveProvider.moveSpeed}");
         }
     }
 
@@ -94,22 +94,27 @@ public class PlayerUpgradeHandler : MonoBehaviour
         return false;
     }
 
-    // --- ¾«ÁéÉý¼¶·½·¨ ---
+    // --- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ---
     public void UpgradePetMultishot()
     {
         petProjectileCount++;
-        Debug.Log($"¾«ÁéÉý¼¶£º¶àÖØÉä»÷£¡µ±Ç°ÊýÁ¿: {petProjectileCount}");
+        Debug.Log($"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½: {petProjectileCount}");
     }
 
-    public void UpgradePetFireRate(float amount) // amount ±ÈÈç 0.2 ±íÊ¾¿ì20%
+    public void UpgradePetFireRate(float amount) // amount ï¿½ï¿½ï¿½ï¿½ 0.2 ï¿½ï¿½Ê¾ï¿½ï¿½20%
     {
         petFireRateMultiplier += amount;
-        Debug.Log($"¾«ÁéÉý¼¶£ºÉäËÙÌáÉý£¡µ±Ç°±¶ÂÊ: {petFireRateMultiplier}");
+        Debug.Log($"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½: {petFireRateMultiplier}");
     }
 
     public void UpgradePetDamage(float amount)
     {
         petDamageMultiplier += amount;
-        Debug.Log($"¾«ÁéÉý¼¶£ºÉËº¦ÌáÉý£¡µ±Ç°±¶ÂÊ: {petDamageMultiplier}");
+        Debug.Log($"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½: {petDamageMultiplier}");
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 }
