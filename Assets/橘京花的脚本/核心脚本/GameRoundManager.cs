@@ -290,75 +290,20 @@ public class GameRoundManager : MonoBehaviour
 
     private IEnumerator RestartGameRoutine()
     {
-#if UNITY_EDITOR
-        Debug.Log("🔄 重启游戏流程开始");
-#endif
+        // 执行初始化
+        yield return StartCoroutine(DelayedStart());
         
-        // 1. 确保 spawner 存在
-        if (spawner == null) 
-        {
-            spawner = FindObjectOfType<AdvancedSnowmanManager>();
-            if (spawner == null)
-            {
-                Debug.LogError("❌ 未找到 AdvancedSnowmanManager！敌人生成将无法进行。");
-            }
-            else
-            {
-#if UNITY_EDITOR
-                Debug.Log($"✅ 找到 AdvancedSnowmanManager: {spawner.gameObject.name}");
-#endif
-            }
-        }
-
-        // 2. 加载游戏配置
-        if (GameSettings.Instance != null)
-        {
-            isEndlessMode = (GameSettings.Instance.currentDifficulty == DifficultyLevel.Endless);
-
-            if (!isEndlessMode)
-            {
-                currentRoundsConfig = GameSettings.Instance.GetRoundsForCurrentDifficulty();
-#if UNITY_EDITOR
-                Debug.Log($"🔵 已加载难度: {GameSettings.Instance.currentDifficulty}, 总回合数: {currentRoundsConfig.Count}");
-#endif
-            }
-            else
-            {
-#if UNITY_EDITOR
-                Debug.Log("🟣 已启动无尽模式");
-#endif
-            }
-        }
-        else
-        {
-            Debug.LogWarning("⚠️ 未找到 GameSettings，启用默认无尽模式测试");
-            isEndlessMode = true;
-        }
-
-        // 3. 立即移除空气墙（跳过43秒等待）
+        // 立即移除空气墙，不等待43秒
         if (startWall != null)
         {
             startWall.SetActive(false);
 #if UNITY_EDITOR
-            Debug.Log("🔓 重启游戏，空气墙已立即移除");
+            Debug.Log("� 重启游戏，空气墙已移除");
 #endif
         }
-        else
-        {
-#if UNITY_EDITOR
-            Debug.LogWarning("⚠️ startWall 为 null，无法移除空气墙");
-#endif
-        }
-
-        // 等待一帧确保所有组件初始化完成
-        yield return null;
-
-        // 4. 直接开始第一回合
-        StartCoroutine(StartNextRoundRoutine());
         
-#if UNITY_EDITOR
-        Debug.Log("✅ 重启游戏流程完成，回合已开始");
-#endif
+        // 直接开始第一回合
+        StartCoroutine(StartNextRoundRoutine());
     }
 
     void OnDestroy()
