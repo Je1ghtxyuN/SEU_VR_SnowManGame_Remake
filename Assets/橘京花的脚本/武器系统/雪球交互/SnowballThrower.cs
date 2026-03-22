@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -41,7 +41,9 @@ public class SnowballThrower : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Grip Action 未设置或无效!");
+            Debug.LogError("Grip Action 未设置或无效! SnowballThrower 组件将被禁用。");
+            enabled = false;
+            return;
         }
 
         previousPosition = transform.position;

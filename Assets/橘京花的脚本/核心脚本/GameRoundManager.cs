@@ -47,7 +47,36 @@ public class GameRoundManager : MonoBehaviour
 
     void Start()
     {
-        if (spawner == null) spawner = FindObjectOfType<AdvancedSnowmanManager>();
+        ResetGameState();
+        StartCoroutine(DelayedStart());
+    }
+
+    private void ResetGameState()
+    {
+        currentRoundIndex = -1;
+        enemiesAlive = 0;
+        isGameComplete = false;
+        currentState = GameState.Waiting;
+        currentRoundNameDisplay = "";
+        Debug.Log("🔄 游戏状态已重置");
+    }
+
+    private IEnumerator DelayedStart()
+    {
+        yield return null; // 等待一帧，确保所有 Awake 方法执行完毕
+        
+        if (spawner == null) 
+        {
+            spawner = FindObjectOfType<AdvancedSnowmanManager>();
+            if (spawner == null)
+            {
+                Debug.LogError("❌ 未找到 AdvancedSnowmanManager！敌人生成将无法进行。");
+            }
+            else
+            {
+                Debug.Log($"✅ 找到 AdvancedSnowmanManager: {spawner.gameObject.name}");
+            }
+        }
 
         // --- 从 GameSettings 读取配置 ---
         if (GameSettings.Instance != null)

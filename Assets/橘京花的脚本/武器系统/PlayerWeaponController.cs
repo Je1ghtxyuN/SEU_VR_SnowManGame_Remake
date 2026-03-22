@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerWeaponController : MonoBehaviour
@@ -107,6 +107,9 @@ public class PlayerWeaponController : MonoBehaviour
     void OnDestroy()
     {
         if (switchWeaponAction != null)
+        {
             switchWeaponAction.action.performed -= OnSwitchWeaponPressed;
+            switchWeaponAction.action.Disable();
+        }
     }
 }

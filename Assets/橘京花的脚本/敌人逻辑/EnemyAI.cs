@@ -3,45 +3,45 @@ using System.Collections;
 
 public class EnemyAI : MonoBehaviour
 {
-    [Header("Ñ²ÂßÉèÖÃ")]
-    public Transform[] patrolPoints; // Ñ²ÂßµãÊý×é
-    public float patrolSpeed = 3f; // Ñ²ÂßÒÆ¶¯ËÙ¶È
-    public float waitTime = 1f; // µ½´ïÑ²ÂßµãºóµÄµÈ´ýÊ±¼ä
-    public float rotationSpeed = 5f; // ×ªÏòËÙ¶È
+    [Header("Ñ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")]
+    public Transform[] patrolPoints; // Ñ²ï¿½ßµï¿½ï¿½ï¿½ï¿½ï¿½
+    public float patrolSpeed = 3f; // Ñ²ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½Ù¶ï¿½
+    public float waitTime = 1f; // ï¿½ï¿½ï¿½ï¿½Ñ²ï¿½ßµï¿½ï¿½ÄµÈ´ï¿½Ê±ï¿½ï¿½
+    public float rotationSpeed = 5f; // ×ªï¿½ï¿½ï¿½Ù¶ï¿½
 
-    [Header("Íæ¼Ò¼ì²â")]
-    public float detectionRange = 10f; // ¼ì²âÍæ¼ÒµÄ·¶Î§
-    public float attackRange = 7f; // ¹¥»÷Íæ¼ÒµÄ·¶Î§
-    public LayerMask playerLayer; // Íæ¼ÒËùÔÚ²ã
-    public LayerMask obstacleLayer; // ÕÏ°­Îï²ã(ÓÃÓÚÊÓÏß¼ì²â)
+    [Header("ï¿½ï¿½Ò¼ï¿½ï¿½")]
+    public float detectionRange = 10f; // ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄ·ï¿½Î§
+    public float attackRange = 7f; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÄ·ï¿½Î§
+    public LayerMask playerLayer; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½
+    public LayerMask obstacleLayer; // ï¿½Ï°ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½)
 
-    [Header("¹¥»÷ÉèÖÃ")]
-    public GameObject snowballPrefab; // Ñ©ÇòÔ¤ÖÆÌå
-    public Transform firePoint; // ·¢Éäµã
-    public float attackCooldown = 2f; // ¹¥»÷ÀäÈ´Ê±¼ä
-    public float projectileSpeed = 10f; // Ñ©ÇòËÙ¶È
+    [Header("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")]
+    public GameObject snowballPrefab; // Ñ©ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½
+    public Transform firePoint; // ï¿½ï¿½ï¿½ï¿½ï¿½
+    public float attackCooldown = 2f; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´Ê±ï¿½ï¿½
+    public float projectileSpeed = 10f; // Ñ©ï¿½ï¿½ï¿½Ù¶ï¿½
 
-    [Header("¶¯»­")]
-    public Animator animator; // ¶¯»­¿ØÖÆÆ÷
-    public string walkAnimParam = "isWalking"; // ÐÐ×ß¶¯»­²ÎÊý
-    public string attackAnimParam = "Attack"; // ¹¥»÷¶¯»­´¥·¢Æ÷
+    [Header("ï¿½ï¿½ï¿½ï¿½")]
+    public Animator animator; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    public string walkAnimParam = "isWalking"; // ï¿½ï¿½ï¿½ß¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    public string attackAnimParam = "Attack"; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     public string dieAnimParam = "die";
 
-    private int currentPatrolIndex = 0; // µ±Ç°Ñ²ÂßµãË÷Òý
-    private bool isWaiting = false; // ÊÇ·ñÔÚµÈ´ý
-    private bool isChasing = false; // ÊÇ·ñÔÚ×·ÖðÍæ¼Ò
-    private bool isAttacking = false; // ÊÇ·ñÔÚ¹¥»÷
-    private Transform player; // Íæ¼ÒÒýÓÃ
-    private float lastAttackTime; // ÉÏ´Î¹¥»÷Ê±¼ä
-    private bool isDead = false; // ËÀÍö×´Ì¬±êÖ¾
+    private int currentPatrolIndex = 0; // ï¿½ï¿½Ç°Ñ²ï¿½ßµï¿½ï¿½ï¿½ï¿½ï¿½
+    private bool isWaiting = false; // ï¿½Ç·ï¿½ï¿½ÚµÈ´ï¿½
+    private bool isChasing = false; // ï¿½Ç·ï¿½ï¿½ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½
+    private bool isAttacking = false; // ï¿½Ç·ï¿½ï¿½Ú¹ï¿½ï¿½ï¿½
+    private Transform player; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    private float lastAttackTime; // ï¿½Ï´Î¹ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
+    private bool isDead = false; // ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½Ö¾
 
     void Start()
     {
-        // Èç¹ûÃ»ÓÐÖ¸¶¨¶¯»­¿ØÖÆÆ÷£¬³¢ÊÔ»ñÈ¡
+        // ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô»ï¿½È¡
         if (animator == null)
             animator = GetComponent<Animator>();
 
-        // Èç¹ûÃ»ÓÐÑ²Âßµã£¬Ê¹ÓÃ×ÔÉíÎ»ÖÃ×÷ÎªÎ¨Ò»Ñ²Âßµã
+        // ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ñ²ï¿½ßµã£¬Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ÎªÎ¨Ò»Ñ²ï¿½ßµï¿½
         if (patrolPoints == null || patrolPoints.Length == 0)
         {
             patrolPoints = new Transform[1];
@@ -49,19 +49,19 @@ public class EnemyAI : MonoBehaviour
             patrolPoints[0].position = transform.position;
         }
 
-        // ¿ªÊ¼Ñ²Âß
+        // ï¿½ï¿½Ê¼Ñ²ï¿½ï¿½
         StartCoroutine(PatrolRoutine());
     }
 
     void Update()
     {
-        // Èç¹ûËÀÍö£¬Ö±½Ó·µ»Ø²»Ö´ÐÐÈÎºÎAIÐÐÎª
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½Ó·ï¿½ï¿½Ø²ï¿½Ö´ï¿½ï¿½ï¿½Îºï¿½AIï¿½ï¿½Îª
         if (isDead) return;
 
-        // ¼ì²âÍæ¼Ò
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         DetectPlayer();
 
-        // Èç¹ûÕýÔÚ×·ÖðÍæ¼Ò£¬×ªÏòÍæ¼Ò
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×·ï¿½ï¿½ï¿½ï¿½Ò£ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½
         if (isChasing && player != null)
         {
             FaceTarget(player.position);
@@ -72,27 +72,27 @@ public class EnemyAI : MonoBehaviour
     {
         while (true)
         {
-            // Èç¹ûËÀÍö£¬Í£Ö¹Ñ²ÂßÐ­³Ì
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£Ö¹Ñ²ï¿½ï¿½Ð­ï¿½ï¿½
             if (isDead) yield break;
 
-            // Èç¹û²»ÔÚ×·Öð»ò¹¥»÷×´Ì¬£¬Ö´ÐÐÑ²Âß
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×·ï¿½ï¿½ò¹¥»ï¿½×´Ì¬ï¿½ï¿½Ö´ï¿½ï¿½Ñ²ï¿½ï¿½
             if (!isChasing && !isAttacking)
             {
-                // ÒÆ¶¯µ½µ±Ç°Ñ²Âßµã
+                // ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½Ç°Ñ²ï¿½ßµï¿½
                 Vector3 targetPos = patrolPoints[currentPatrolIndex].position;
                 if (Vector3.Distance(transform.position, targetPos) > 0.1f)
                 {
-                    // ÉèÖÃÐÐ×ß¶¯»­
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¶ï¿½ï¿½ï¿½
                     if (animator != null)
                         animator.SetBool(walkAnimParam, true);
 
-                    // ÒÆ¶¯ºÍ×ªÏò
+                    // ï¿½Æ¶ï¿½ï¿½ï¿½×ªï¿½ï¿½
                     FaceTarget(targetPos);
                     transform.position = Vector3.MoveTowards(transform.position, targetPos, patrolSpeed * Time.deltaTime);
                 }
                 else
                 {
-                    // µ½´ïÑ²Âßµã£¬µÈ´ýÒ»¶ÎÊ±¼ä
+                    // ï¿½ï¿½ï¿½ï¿½Ñ²ï¿½ßµã£¬ï¿½È´ï¿½Ò»ï¿½ï¿½Ê±ï¿½ï¿½
                     if (animator != null)
                         animator.SetBool(walkAnimParam, false);
 
@@ -102,7 +102,7 @@ public class EnemyAI : MonoBehaviour
                         yield return new WaitForSeconds(waitTime);
                         isWaiting = false;
 
-                        // ÇÐ»»µ½ÏÂÒ»¸öÑ²Âßµã
+                        // ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ñ²ï¿½ßµï¿½
                         currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length;
                     }
                 }
@@ -113,27 +113,27 @@ public class EnemyAI : MonoBehaviour
 
     void DetectPlayer()
     {
-        // Èç¹ûËÀÍö£¬²»¼ì²âÍæ¼Ò
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if (isDead) return;
 
-        // ¼ì²â·¶Î§ÄÚµÄÍæ¼Ò
+        // ï¿½ï¿½â·¶Î§ï¿½Úµï¿½ï¿½ï¿½ï¿½
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, detectionRange, playerLayer);
 
         if (hitColliders.Length > 0)
         {
-            // ¼ÙÉè³¡¾°ÖÐÖ»ÓÐÒ»¸öÍæ¼Ò
+            // ï¿½ï¿½ï¿½è³¡ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
             player = hitColliders[0].transform;
 
-            // ¼ì²éÊÇ·ñÓÐÊÓÏß(Ã»ÓÐÕÏ°­Îï×èµ²)
+            // ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Ã»ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ï¿½èµ²)
             Vector3 directionToPlayer = (player.position - transform.position).normalized;
             float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
             if (!Physics.Raycast(transform.position, directionToPlayer, distanceToPlayer, obstacleLayer))
             {
-                // Íæ¼ÒÔÚ¼ì²â·¶Î§ÄÚÇÒ¿É¼û
+                // ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½â·¶Î§ï¿½ï¿½ï¿½Ò¿É¼ï¿½
                 isChasing = true;
 
-                // Èç¹ûÍæ¼ÒÔÚ¹¥»÷·¶Î§ÄÚ£¬³¢ÊÔ¹¥»÷
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¹ï¿½ï¿½ï¿½ï¿½ï¿½Î§ï¿½Ú£ï¿½ï¿½ï¿½ï¿½Ô¹ï¿½ï¿½ï¿½
                 if (distanceToPlayer <= attackRange)
                 {
                     if (Time.time >= lastAttackTime + attackCooldown)
@@ -143,19 +143,19 @@ public class EnemyAI : MonoBehaviour
                 }
                 else
                 {
-                    // ×·ÖðÍæ¼Ò
+                    // ×·ï¿½ï¿½ï¿½ï¿½ï¿½
                     ChasePlayer();
                 }
             }
             else
             {
-                // Íæ¼Ò±»ÕÏ°­Îï×èµ²£¬·µ»ØÑ²Âß
+                // ï¿½ï¿½Ò±ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ï¿½èµ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ²ï¿½ï¿½
                 isChasing = false;
             }
         }
         else
         {
-            // Ã»ÓÐ¼ì²âµ½Íæ¼Ò£¬·µ»ØÑ²Âß
+            // Ã»ï¿½Ð¼ï¿½âµ½ï¿½ï¿½Ò£ï¿½ï¿½ï¿½ï¿½ï¿½Ñ²ï¿½ï¿½
             isChasing = false;
             player = null;
         }
@@ -163,79 +163,89 @@ public class EnemyAI : MonoBehaviour
 
     void ChasePlayer()
     {
-        // Èç¹ûËÀÍö£¬²»×·ÖðÍæ¼Ò
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×·ï¿½ï¿½ï¿½ï¿½ï¿½
         if (isDead) return;
 
         if (player != null)
         {
-            // ÉèÖÃÐÐ×ß¶¯»­
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¶ï¿½ï¿½ï¿½
             if (animator != null)
                 animator.SetBool(walkAnimParam, true);
 
-            // ÏòÍæ¼ÒÒÆ¶¯
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½
             transform.position = Vector3.MoveTowards(transform.position, player.position, patrolSpeed * Time.deltaTime);
         }
     }
 
     IEnumerator AttackPlayer()
     {
-        // Èç¹ûËÀÍö£¬²»Ö´ÐÐ¹¥»÷
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ð¹ï¿½ï¿½ï¿½
         if (isDead) yield break;
 
         if (isAttacking || player == null)
         {
-            Debug.Log($"¹¥»÷±»×èÖ¹ - isAttacking:{isAttacking} player:{player != null}");
+    #if UNITY_EDITOR
+        Debug.Log($"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¹ - isAttacking:{isAttacking} player:{player != null}");
+#endif
             yield break;
         }
 
         isAttacking = true;
         lastAttackTime = Time.time;
 
-        Debug.Log($"¿ªÊ¼¹¥»÷ - Ê±¼ä:{Time.time}");
+#if UNITY_EDITOR
+        Debug.Log($"ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ - Ê±ï¿½ï¿½:{Time.time}");
+#endif
 
-        // ´¥·¢¹¥»÷¶¯»­
-        Debug.Log("ÖØÖÃ²¢´¥·¢Attack´¥·¢Æ÷");
-        animator.ResetTrigger(attackAnimParam); // ÏÈÖØÖÃ
-        animator.SetTrigger(attackAnimParam);  // ÔÙ´¥·¢
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+#if UNITY_EDITOR
+        Debug.Log("ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½ï¿½ï¿½Attackï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
+#endif
+        animator.ResetTrigger(attackAnimParam); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        animator.SetTrigger(attackAnimParam);  // ï¿½Ù´ï¿½ï¿½ï¿½
    
 
-        // µÈ´ý¶¯»­Ç°Ò¡(¸ù¾ÝÊµ¼Ê¶¯»­µ÷Õû)
+        // ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½Ç°Ò¡(ï¿½ï¿½ï¿½ï¿½Êµï¿½Ê¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
         float animationLeadTime = 0.3f;
         yield return new WaitForSeconds(animationLeadTime);
-        Debug.Log($"·¢ÉäÑ©Çò - Ê±¼ä:{Time.time}");
+#if UNITY_EDITOR
+        Debug.Log($"ï¿½ï¿½ï¿½ï¿½Ñ©ï¿½ï¿½ - Ê±ï¿½ï¿½:{Time.time}");
+#endif
 
-        // ·¢ÉäÑ©Çò
+        // ï¿½ï¿½ï¿½ï¿½Ñ©ï¿½ï¿½
         if (snowballPrefab != null && firePoint != null)
         {
             try
             {
                 GameObject snowball = Instantiate(snowballPrefab, firePoint.position, Quaternion.identity);
-                Debug.Log($"Ñ©ÇòÊµÀý»¯³É¹¦ {snowball.name}");
+#if UNITY_EDITOR
+                Debug.Log($"Ñ©ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ {snowball.name}");
+#endif
 
                 Rigidbody rb = snowball.GetComponent<Rigidbody>();
                 if (rb != null)
                 {
-                    // ¼ÆËã»ù´¡·½Ïò£¨Ë®Æ½·½Ïò£©
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë®Æ½ï¿½ï¿½ï¿½ï¿½
                     Vector3 horizontalDirection = (player.position - firePoint.position).normalized;
-                    horizontalDirection.y = 0; // ±£³ÖË®Æ½
+                    horizontalDirection.y = 0; // ï¿½ï¿½ï¿½ï¿½Ë®Æ½
 
-                    // Ìí¼ÓÏòÉÏ½Ç¶È£¨½¨Òé15-30¶È£©
-                    float launchAngle = 20f; // ½Ç¶È¿Éµ÷
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï½Ç¶È£ï¿½ï¿½ï¿½ï¿½ï¿½15-30ï¿½È£ï¿½
+                    float launchAngle = 20f; // ï¿½Ç¶È¿Éµï¿½
                     float radians = launchAngle * Mathf.Deg2Rad;
 
-                    // ×îÖÕ·¢Éä·½Ïò£¨´øÅ×ÎïÏß£©
+                    // ï¿½ï¿½ï¿½Õ·ï¿½ï¿½ä·½ï¿½ò£¨´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß£ï¿½
                     Vector3 launchDirection = new Vector3(
                         horizontalDirection.x * Mathf.Cos(radians),
                         Mathf.Sin(radians),
                         horizontalDirection.z * Mathf.Cos(radians)
                     ).normalized;
 
-                    // ¿ÉÊÓ»¯µ÷ÊÔ
+                    // ï¿½ï¿½ï¿½Ó»ï¿½ï¿½ï¿½ï¿½ï¿½
                     Debug.DrawRay(firePoint.position, launchDirection * 5f, Color.cyan, 2f);
 
                     rb.velocity = launchDirection * projectileSpeed;
 
-                    // Ìí¼ÓÐý×ªÐ§¹û
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªÐ§ï¿½ï¿½
                     rb.angularVelocity = new Vector3(
                         Random.Range(-5f, 5f),
                         Random.Range(-5f, 5f),
@@ -246,32 +256,36 @@ public class EnemyAI : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError("Ñ©ÇòÈ±ÉÙRigidbody×é¼þ");
+                    Debug.LogError("Ñ©ï¿½ï¿½È±ï¿½ï¿½Rigidbodyï¿½ï¿½ï¿½");
                 }
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"Ñ©ÇòÊµÀý»¯Ê§°Ü: {e.Message}");
+                Debug.LogError($"Ñ©ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½: {e.Message}");
             }
         }
         else
         {
-            Debug.LogError($"Ñ©ÇòÔ¤ÖÆÌå:{snowballPrefab != null} ·¢Éäµã:{firePoint != null}");
+            Debug.LogError($"Ñ©ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½:{snowballPrefab != null} ï¿½ï¿½ï¿½ï¿½ï¿½:{firePoint != null}");
         }
 
-        // µÈ´ýÊ£ÓàÀäÈ´Ê±¼ä
+        // ï¿½È´ï¿½Ê£ï¿½ï¿½ï¿½ï¿½È´Ê±ï¿½ï¿½
         float remainingCooldown = Mathf.Max(0, attackCooldown - animationLeadTime);
-        Debug.Log($"µÈ´ýÀäÈ´Ê±¼ä: {remainingCooldown}Ãë");
+#if UNITY_EDITOR
+        Debug.Log($"ï¿½È´ï¿½ï¿½ï¿½È´Ê±ï¿½ï¿½: {remainingCooldown}ï¿½ï¿½");
+#endif
         yield return new WaitForSeconds(remainingCooldown);
 
         isAttacking = false;
-        Debug.Log($"¹¥»÷½áÊø - Ê±¼ä:{Time.time} ÏÂ´Î¿É¹¥»÷Ê±¼ä:{lastAttackTime + attackCooldown}");
+#if UNITY_EDITOR
+        Debug.Log($"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ - Ê±ï¿½ï¿½:{Time.time} ï¿½Â´Î¿É¹ï¿½ï¿½ï¿½Ê±ï¿½ï¿½:{lastAttackTime + attackCooldown}");
+#endif
     }
 
     void FaceTarget(Vector3 target)
     {
         Vector3 direction = (target - transform.position).normalized;
-        direction.y = 0; // ±£³ÖË®Æ½Ðý×ª
+        direction.y = 0; // ï¿½ï¿½ï¿½ï¿½Ë®Æ½ï¿½ï¿½×ª
         if (direction != Vector3.zero)
         {
             Quaternion lookRotation = Quaternion.LookRotation(direction);
@@ -281,7 +295,7 @@ public class EnemyAI : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        // »æÖÆ¼ì²â·¶Î§ºÍ¹¥»÷·¶Î§
+        // ï¿½ï¿½ï¿½Æ¼ï¿½â·¶Î§ï¿½Í¹ï¿½ï¿½ï¿½ï¿½ï¿½Î§
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
 
@@ -289,7 +303,7 @@ public class EnemyAI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 
-    // ±ê¼ÇµÐÈËËÀÍö
+    // ï¿½ï¿½Çµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     public void MarkAsDead()
     {
         isDead = true;
