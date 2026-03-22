@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class PlayerHealth : MonoBehaviour
@@ -130,8 +131,8 @@ public class PlayerHealth : MonoBehaviour
         healthSystem.OnDeath -= Die;
         healthSystem.OnHealthChanged -= OnHealthChanged;
 
-        // 启动游戏重启协程
-        StartCoroutine(RestartGameRoutine());
+        // ⭐ 修改：移除自动重启，等待玩家手动点击重新开始按钮
+        // 不再调用 StartCoroutine(RestartGameRoutine());
     }
 
     public void Heal(float amount)
@@ -152,10 +153,12 @@ public class PlayerHealth : MonoBehaviour
         );
     }
 
-    private IEnumerator RestartGameRoutine()
+    // 公共方法：供死亡UI按钮调用，重新开始游戏
+    public void ManualRestartGame()
     {
-        // 等待3秒让玩家看到死亡UI
-        yield return new WaitForSecondsRealtime(3f);
+#if UNITY_EDITOR
+        Debug.Log("🔄 PlayerHealth.ManualRestartGame() 被调用，准备重新开始游戏");
+#endif
 
         // 恢复时间缩放
         Time.timeScale = 1f;
@@ -167,27 +170,17 @@ public class PlayerHealth : MonoBehaviour
             deathUIInstance = null;
         }
 
-        // 重置玩家状态
-        isDead = false;
-        var thrower = GetComponentInChildren<SnowballThrower>();
-        if (thrower != null) thrower.canThrow = true;
+        // 设置跳过教程标志
+        ButtonFunction.skipTutorialOnReload = true;
+#if UNITY_EDITOR
+        Debug.Log($"✅ 已设置跳过教程标志: {ButtonFunction.skipTutorialOnReload}");
+#endif
 
-        // 重置血量系统
-        if (healthSystem != null)
-        {
-            healthSystem.OnDeath += Die;
-            healthSystem.OnHealthChanged += OnHealthChanged;
-            healthSystem.SetHealth(100f); // 满血复活
-        }
-
-        // 调用游戏管理器重启游戏
-        if (GameRoundManager.Instance != null)
-        {
-            GameRoundManager.Instance.RestartGame();
-        }
-        else
-        {
-            Debug.LogError("GameRoundManager.Instance 为 null，无法重启游戏");
-        }
+        // 重新加载当前场景（完全重置游戏状态）
+        string currentSceneName = SceneManager.GetActiveScene().name;
+#if UNITY_EDITOR
+        Debug.Log($"🔄 重新加载场景: {currentSceneName}");
+#endif
+        SceneManager.LoadScene(currentSceneName);
     }
 }

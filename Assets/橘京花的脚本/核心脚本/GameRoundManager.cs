@@ -130,6 +130,9 @@ public class GameRoundManager : MonoBehaviour
 
     private IEnumerator SkipTutorialAndStart()
     {
+#if UNITY_EDITOR
+        Debug.Log("🔄 SkipTutorialAndStart() 被调用，跳过教程直接开始游戏");
+#endif
         yield return null; // 等待一帧，确保所有 Awake 方法执行完毕
         
         if (spawner == null) 
@@ -173,12 +176,38 @@ public class GameRoundManager : MonoBehaviour
         }
 
         // 跳过开场语音，立即移除空气墙
+#if UNITY_EDITOR
+        Debug.Log($"🔍 检查空气墙引用: startWall = {startWall}");
+#endif
         if (startWall != null)
         {
             startWall.SetActive(false);
 #if UNITY_EDITOR
             Debug.Log("🔓 跳过教程，空气墙已立即移除，玩家可自由移动。");
 #endif
+        }
+        else
+        {
+#if UNITY_EDITOR
+            Debug.LogWarning("⚠️ startWall 引用为 null，尝试查找空气墙对象...");
+#endif
+            // 尝试通过名称或标签查找空气墙
+            GameObject foundWall = GameObject.Find("StartWall"); // 假设名称
+            if (foundWall == null) foundWall = GameObject.FindWithTag("StartWall");
+            if (foundWall != null)
+            {
+                startWall = foundWall;
+                startWall.SetActive(false);
+#if UNITY_EDITOR
+                Debug.Log($"✅ 找到空气墙对象: {startWall.name}，已禁用");
+#endif
+            }
+            else
+            {
+#if UNITY_EDITOR
+                Debug.LogError("❌ 无法找到空气墙对象！玩家可能无法移动。");
+#endif
+            }
         }
 
         // 直接开始第一回合
