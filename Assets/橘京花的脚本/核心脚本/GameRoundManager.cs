@@ -125,7 +125,7 @@ public class GameRoundManager : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log("⏳ 游戏流程：等待新手语音播放 (43秒)...");
 #endif
-        yield return new WaitForSeconds(43.0f);
+        yield return new WaitForSecondsRealtime(43.0f);
 
         if (startWall != null)
         {
@@ -264,6 +264,46 @@ public class GameRoundManager : MonoBehaviour
         {
             gameInfoUI.UpdateInfo(roundName, enemiesAlive);
         }
+    }
+
+    // ⭐ 新增：重新开始游戏方法（供玩家死亡时调用）
+    public void RestartGame()
+    {
+        if (isGameComplete) return; // 如果游戏已通关，不重启
+        
+        StopAllCoroutines();
+        ResetGameState();
+        
+        // 重置空气墙状态
+        if (startWall != null) startWall.SetActive(true);
+        
+        // 清理所有敌人
+        if (spawner != null) spawner.ClearAllSnowmen();
+        
+        // 重新开始游戏流程（跳过教程等待）
+        StartCoroutine(RestartGameRoutine());
+        
+#if UNITY_EDITOR
+        Debug.Log("🔄 游戏已重新开始（跳过教程）");
+#endif
+    }
+
+    private IEnumerator RestartGameRoutine()
+    {
+        // 执行初始化
+        yield return StartCoroutine(DelayedStart());
+        
+        // 立即移除空气墙，不等待43秒
+        if (startWall != null)
+        {
+            startWall.SetActive(false);
+#if UNITY_EDITOR
+            Debug.Log("� 重启游戏，空气墙已移除");
+#endif
+        }
+        
+        // 直接开始第一回合
+        StartCoroutine(StartNextRoundRoutine());
     }
 
     void OnDestroy()

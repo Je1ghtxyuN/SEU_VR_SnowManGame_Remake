@@ -60,14 +60,18 @@ public class PlayerUpgradeHandler : MonoBehaviour
         if (playerHealth != null)
         {
             playerHealth.Heal(amount);
+#if UNITY_EDITOR
             Debug.Log($"��һظ��� {amount} ��Ѫ��");
+#endif
         }
     }
 
     public void UpgradeDamage(float percentage)
     {
         damageMultiplier += percentage; // ���紫�� 0.2f�����ʱ�Ϊ 1.2
+#if UNITY_EDITOR
         Debug.Log($"�˺���������ǰ����: {damageMultiplier}");
+#endif
     }
 
     public void UpgradeSpeed(float percentage)
@@ -76,7 +80,9 @@ public class PlayerUpgradeHandler : MonoBehaviour
         {
             speedMultiplier += percentage;
             moveProvider.moveSpeed = initialMoveSpeed * speedMultiplier;
+#if UNITY_EDITOR
             Debug.Log($"�ٶ���������ǰ�ٶ�: {moveProvider.moveSpeed}");
+#endif
         }
     }
 
@@ -98,19 +104,25 @@ public class PlayerUpgradeHandler : MonoBehaviour
     public void UpgradePetMultishot()
     {
         petProjectileCount++;
+#if UNITY_EDITOR
         Debug.Log($"���������������������ǰ����: {petProjectileCount}");
+#endif
     }
 
     public void UpgradePetFireRate(float amount) // amount ���� 0.2 ��ʾ��20%
     {
         petFireRateMultiplier += amount;
+#if UNITY_EDITOR
         Debug.Log($"����������������������ǰ����: {petFireRateMultiplier}");
+#endif
     }
 
     public void UpgradePetDamage(float amount)
     {
         petDamageMultiplier += amount;
+#if UNITY_EDITOR
         Debug.Log($"�����������˺���������ǰ����: {petDamageMultiplier}");
+#endif
     }
 
     void OnDestroy()

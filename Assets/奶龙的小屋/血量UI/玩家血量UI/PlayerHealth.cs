@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -128,6 +129,9 @@ public class PlayerHealth : MonoBehaviour
 
         healthSystem.OnDeath -= Die;
         healthSystem.OnHealthChanged -= OnHealthChanged;
+
+        // 启动游戏重启协程
+        StartCoroutine(RestartGameRoutine());
     }
 
     public void Heal(float amount)
@@ -146,5 +150,44 @@ public class PlayerHealth : MonoBehaviour
             vrCamera.transform.position + vrCamera.transform.forward * 1.5f + (-vrCamera.transform.up) * 1f,
             vrCamera.transform.rotation
         );
+    }
+
+    private IEnumerator RestartGameRoutine()
+    {
+        // 等待3秒让玩家看到死亡UI
+        yield return new WaitForSecondsRealtime(3f);
+
+        // 恢复时间缩放
+        Time.timeScale = 1f;
+
+        // 销毁死亡UI
+        if (deathUIInstance != null)
+        {
+            Destroy(deathUIInstance);
+            deathUIInstance = null;
+        }
+
+        // 重置玩家状态
+        isDead = false;
+        var thrower = GetComponentInChildren<SnowballThrower>();
+        if (thrower != null) thrower.canThrow = true;
+
+        // 重置血量系统
+        if (healthSystem != null)
+        {
+            healthSystem.OnDeath += Die;
+            healthSystem.OnHealthChanged += OnHealthChanged;
+            healthSystem.SetHealth(100f); // 满血复活
+        }
+
+        // 调用游戏管理器重启游戏
+        if (GameRoundManager.Instance != null)
+        {
+            GameRoundManager.Instance.RestartGame();
+        }
+        else
+        {
+            Debug.LogError("GameRoundManager.Instance 为 null，无法重启游戏");
+        }
     }
 }
