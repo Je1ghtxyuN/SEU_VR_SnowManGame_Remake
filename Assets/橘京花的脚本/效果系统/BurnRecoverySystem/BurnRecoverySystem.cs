@@ -15,6 +15,10 @@ public class BurnRecoverySystem : MonoBehaviour
     public string targetRendererName = "Renderer_Body";
     public float colorSmoothSpeed = 2f;
 
+    [Header("里程碑系统")]
+    [Tooltip("里程碑系统（可选，场景中已有的实例）")]
+    public RecoveryMilestoneSystem milestoneSystem;
+
     [Header("视觉效果：烧伤状态 (起点)")]
     public Color burnTint = new Color(0.7f, 0.5f, 0.5f);
     [ColorUsage(false, true)]
@@ -54,6 +58,10 @@ public class BurnRecoverySystem : MonoBehaviour
     {
         CreateRecoveryUI();
         InitializeMaterial();
+
+        // 自动查找里程碑系统
+        if (milestoneSystem == null)
+            milestoneSystem = FindAnyObjectByType<RecoveryMilestoneSystem>();
 
         // ⭐ 修改：如果是对照组，直接设置为终点状态（或者你希望的无特效状态）
         if (ExperimentVisualControl.Instance != null && !ExperimentVisualControl.Instance.ShouldShowVisuals())
@@ -101,13 +109,20 @@ public class BurnRecoverySystem : MonoBehaviour
         currentCrystals++;
         float progress = GetRecoveryProgress();
 
-        // ⭐ 修改：对照组不更新视觉目标值，只跑逻辑
+        // 对照组不更新视觉目标值，只跑逻辑
         if (ExperimentVisualControl.Instance == null || ExperimentVisualControl.Instance.ShouldShowVisuals())
         {
             if (!debugPreviewFinalEffect) UpdateVisuals(progress);
         }
 
-        // 语音逻辑保留 (心理暗示属于听觉，通常对照组也保留，或者你可以根据需求在这里也加判断)
+        // 里程碑检查（受 FeatureToggle 控制）
+        if (milestoneSystem != null)
+        {
+            if (FeatureToggle.Instance == null || FeatureToggle.Instance.useMilestoneSystem)
+                milestoneSystem.CheckMilestone(progress);
+        }
+
+        // 语音逻辑保留
         if (progress >= 1.0f && !hasPlayedRecoveryVoice)
         {
             if (PlayerVoiceSystem.Instance != null)
@@ -178,8 +193,6 @@ public class BurnRecoverySystem : MonoBehaviour
             foreach (var img in images) if (img.type == Image.Type.Filled) { bodyFillImage = img; break; }
         }
 
-        // ⭐ 修改：如果是对照组，可能隐藏UI？这里暂且保留UI，只隐藏材质特效。
-        // 如果想隐藏UI，加一句: if(!ExperimentVisualControl.Instance.ShouldShowVisuals()) uiInstance.SetActive(false);
     }
 
     private Transform FindDeepChild(Transform parent, string name)

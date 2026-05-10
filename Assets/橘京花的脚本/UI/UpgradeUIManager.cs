@@ -1,56 +1,37 @@
-﻿using UnityEngine;
+using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 
 public class UpgradeUIManager : MonoBehaviour
 {
-    [System.Serializable]
-    public class UpgradeOption
-    {
-        public string id;
-        public string displayText;
-        [TextArea] public string description;
-    }
-
     [Header("UI组件引用")]
     [SerializeField] private GameObject upgradePanel;
     [SerializeField] private TextMeshProUGUI leftButtonText;
     [SerializeField] private TextMeshProUGUI rightButtonText;
+    [SerializeField] private Image leftIcon;
+    [SerializeField] private Image rightIcon;
 
-    [Header("特效引用 ")]
+    [Header("特效引用")]
     [SerializeField] private GameObject levelUpEffectPrefab;
 
-    [Tooltip("请选择地面的Layer")]
-    [SerializeField] private LayerMask groundLayer;
-
     [Header("升级池设置")]
-    [SerializeField] private List<UpgradeOption> upgradePool = new List<UpgradeOption>();
+    [SerializeField] private List<UpgradeData> upgradePool = new List<UpgradeData>();
 
     [Header("VR显示设置")]
     [SerializeField] private float displayDistance = 2f;
     [SerializeField] private float heightOffset = -0.3f;
     [SerializeField] private float playerFeetOffset = -1.7f;
 
-    private UpgradeOption currentLeftUpgrade;
-    private UpgradeOption currentRightUpgrade;
+    private UpgradeData currentLeftUpgrade;
+    private UpgradeData currentRightUpgrade;
     private Transform playerCamera;
+    private Dictionary<UpgradeData, int> pickCounts = new Dictionary<UpgradeData, int>();
 
     void Start()
     {
         if (Camera.main != null) playerCamera = Camera.main.transform;
         if (upgradePanel != null) upgradePanel.SetActive(false);
-
-        // 如果没有配置，添加默认配置
-        if (upgradePool.Count == 0)
-        {
-            upgradePool.Add(new UpgradeOption { id = "HEAL", displayText = "恢复生命\n<size=60%>回复 30 点血量</size>" });
-            upgradePool.Add(new UpgradeOption { id = "DAMAGE", displayText = "力量强化\n<size=60%>提升 20% 伤害</size>" });
-            upgradePool.Add(new UpgradeOption { id = "SPEED", displayText = "迅捷步伐\n<size=60%>提升 20% 移速</size>" });
-            upgradePool.Add(new UpgradeOption { id = "SWORD", displayText = "寒冰之剑\n<size=60%>解锁近战武器 (按B切换)</size>" });
-            upgradePool.Add(new UpgradeOption { id = "PET_MULTI", displayText = "精灵散射\n<size=60%>精灵子弹数量 +1</size>" });
-            upgradePool.Add(new UpgradeOption { id = "PET_RATE", displayText = "精灵急速\n<size=60%>精灵射速提升 25%</size>" });
-            upgradePool.Add(new UpgradeOption { id = "PET_DMG", displayText = "精灵强化\n<size=60%>精灵伤害提升 30%</size>" });
-        }
     }
 
     public void ShowUpgradePanel()
@@ -78,21 +59,22 @@ public class UpgradeUIManager : MonoBehaviour
 
     private void RandomizeUpgrades()
     {
-        List<UpgradeOption> validPool = new List<UpgradeOption>();
+        List<UpgradeData> validPool = new List<UpgradeData>();
 
-        foreach (var option in upgradePool)
+        foreach (var data in upgradePool)
         {
-            if (option.id == "SWORD")
-            {
-                if (PlayerUpgradeHandler.Instance != null && !PlayerUpgradeHandler.Instance.IsSwordUnlocked())
-                {
-                    validPool.Add(option);
-                }
-            }
-            else
-            {
-                validPool.Add(option);
-            }
+            if (data == null) continue;
+
+            // 检查次数限制
+            int picked = pickCounts.ContainsKey(data) ? pickCounts[data] : 0;
+            if (picked >= data.maxPickCount) continue;
+
+            // 剑已解锁则跳过
+            if (data.upgradeType == UpgradeType.UnlockSword &&
+                PlayerUpgradeHandler.Instance != null && PlayerUpgradeHandler.Instance.IsSwordUnlocked())
+                continue;
+
+            validPool.Add(data);
         }
 
         if (validPool.Count < 2)
@@ -101,23 +83,46 @@ public class UpgradeUIManager : MonoBehaviour
             return;
         }
 
-        int index1 = Random.Range(0, validPool.Count);
-        int index2 = index1;
-        while (index2 == index1)
-        {
-            index2 = Random.Range(0, validPool.Count);
-        }
+        // 权重随机选择
+        currentLeftUpgrade = PickWeighted(validPool, null);
+        currentRightUpgrade = PickWeighted(validPool, currentLeftUpgrade);
 
-        currentLeftUpgrade = validPool[index1];
-        currentRightUpgrade = validPool[index2];
+        // 更新 UI
+        if (leftButtonText != null) leftButtonText.text = currentLeftUpgrade.GetDisplayText();
+        if (rightButtonText != null) rightButtonText.text = currentRightUpgrade.GetDisplayText();
 
-        if (leftButtonText != null) leftButtonText.text = currentLeftUpgrade.displayText;
-        if (rightButtonText != null) rightButtonText.text = currentRightUpgrade.displayText;
+        if (leftIcon != null) leftIcon.sprite = currentLeftUpgrade.icon;
+        if (rightIcon != null) rightIcon.sprite = currentRightUpgrade.icon;
     }
 
-    private void ApplyUpgradeEffect(UpgradeOption upgrade)
+    private UpgradeData PickWeighted(List<UpgradeData> pool, UpgradeData exclude)
     {
-        Debug.Log($"执行升级: {upgrade.id}");
+        float totalWeight = 0f;
+        foreach (var d in pool)
+        {
+            if (d != exclude) totalWeight += d.weight;
+        }
+
+        float roll = Random.Range(0f, totalWeight);
+        float cumulative = 0f;
+        foreach (var d in pool)
+        {
+            if (d == exclude) continue;
+            cumulative += d.weight;
+            if (roll <= cumulative) return d;
+        }
+
+        // 兜底
+        foreach (var d in pool)
+        {
+            if (d != exclude) return d;
+        }
+        return pool[0];
+    }
+
+    private void ApplyUpgradeEffect(UpgradeData upgrade)
+    {
+        Debug.Log($"执行升级: {upgrade.upgradeName} ({upgrade.upgradeType})");
 
         SpawnVisualEffect();
 
@@ -128,29 +133,31 @@ public class UpgradeUIManager : MonoBehaviour
             return;
         }
 
-        switch (upgrade.id)
+        switch (upgrade.upgradeType)
         {
-            case "HEAL": handler.UpgradeHeal(30f); break;
-            case "DAMAGE": handler.UpgradeDamage(0.25f); break;
-            case "SPEED": handler.UpgradeSpeed(0.2f); break;
-            case "SWORD": handler.UnlockSword(); break;
-            case "PET_MULTI": handler.UpgradePetMultishot(); break;
-            case "PET_RATE": handler.UpgradePetFireRate(0.25f); break;
-            case "PET_DMG": handler.UpgradePetDamage(0.3f); break;
-            default: Debug.LogWarning("未知的升级ID"); break;
+            case UpgradeType.Heal: handler.UpgradeHeal(upgrade.value); break;
+            case UpgradeType.Damage: handler.UpgradeDamage(upgrade.value); break;
+            case UpgradeType.Speed: handler.UpgradeSpeed(upgrade.value); break;
+            case UpgradeType.UnlockSword: handler.UnlockSword(); break;
+            case UpgradeType.PetMultishot: handler.UpgradePetMultishot(); break;
+            case UpgradeType.PetFireRate: handler.UpgradePetFireRate(upgrade.value); break;
+            case UpgradeType.PetDamage: handler.UpgradePetDamage(upgrade.value); break;
+            case UpgradeType.RecoveryBonus: handler.UpgradeHealToFull(); break;
+            default: Debug.LogWarning($"未知的升级类型: {upgrade.upgradeType}"); break;
         }
+
+        // 记录选择次数
+        if (!pickCounts.ContainsKey(upgrade)) pickCounts[upgrade] = 0;
+        pickCounts[upgrade]++;
     }
 
     private void SpawnVisualEffect()
     {
-        // 播放语音 (心理暗示通常属于听觉干预，对照组一般保留，如果想关掉也可以加判断)
         if (PlayerVoiceSystem.Instance != null)
         {
             PlayerVoiceSystem.Instance.PlayVoice("Level_Up");
         }
 
-        // ⭐ 修改：核心视觉控制逻辑
-        // 如果是对照组 (ShouldShowVisuals 返回 false)，则直接 return，不生成光柱
         if (ExperimentVisualControl.Instance != null && !ExperimentVisualControl.Instance.ShouldShowVisuals())
         {
             return;
@@ -158,7 +165,6 @@ public class UpgradeUIManager : MonoBehaviour
 
         if (levelUpEffectPrefab != null && playerCamera != null)
         {
-            // 只有在实验组才会执行这里
             GameObject effect = Instantiate(levelUpEffectPrefab, playerCamera);
             effect.transform.localPosition = new Vector3(0, playerFeetOffset, 0);
             effect.transform.localRotation = Quaternion.identity;

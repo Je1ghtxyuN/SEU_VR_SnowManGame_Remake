@@ -4,82 +4,96 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class XRUIToggle : MonoBehaviour
 {
-    [Header("±ØÌî²ÎÊı")]
-    [SerializeField] private InputActionReference menuAction; // °ó¶¨²Ëµ¥¼ü
-    [SerializeField] private GameObject uiCanvas; // UIÔ¤ÖÆÌåÒıÓÃ
+    [Header("è¾“å…¥ç»‘å®š")]
+    [SerializeField] private InputActionReference menuAction;
+    [SerializeField] private GameObject uiCanvas;
 
-    [Header("ÏÔÊ¾ÉèÖÃ")]
-    [SerializeField] private float displayDistance = 2f; // UIÏÔÊ¾¾àÀë
-    [SerializeField] private float heightOffset = -0.3f; // ¸ß¶ÈÆ«ÒÆ
+    [Header("æ¸¸æˆçŠ¶æ€")]
+    [SerializeField] private bool pauseGameWhenOpen = true;
 
-    [Header("ÓÎÏ·×´Ì¬")]
-    [SerializeField] private bool pauseGameWhenOpen = true; // ÊÇ·ñÔÚ´ò¿ª²Ëµ¥Ê±ÔİÍ£ÓÎÏ·
+    private VRUIPanel vrPanel;
+    private bool isUIVisible;
+    private float previousTimeScale;
 
     private Transform playerCamera;
-    private bool isUIVisible;
-    private float previousTimeScale; // ´æ´¢Ô­À´µÄÊ±¼äÁ÷ËÙ
 
     void Start()
     {
-        playerCamera = Camera.main.transform;
+        playerCamera = Camera.main?.transform;
         menuAction.action.Enable();
         menuAction.action.performed += ToggleUI;
         menuAction.action.AddBinding("<XRController>{LeftHand}/menuButton");
 
-        // ³õÊ¼Òş²ØUI
-        uiCanvas.SetActive(false);
-        previousTimeScale = Time.timeScale; // ¼ÇÂ¼³õÊ¼Ê±¼äÁ÷ËÙ
+        // æ£€æŸ¥åŠŸèƒ½å¼€å…³ï¼šå¦‚æœå¯ç”¨ VRUIPanel ä¸”é¢æ¿ä¸Šæœ‰è¯¥ç»„ä»¶åˆ™ä½¿ç”¨
+        if (uiCanvas != null)
+        {
+            if (FeatureToggle.Instance != null && FeatureToggle.Instance.useVRUIPanel)
+                vrPanel = uiCanvas.GetComponent<VRUIPanel>();
+            else
+                vrPanel = null;
+        }
+
+        if (vrPanel != null)
+            vrPanel.HidePanelImmediate();
+        else
+            uiCanvas.SetActive(false);
+
+        previousTimeScale = Time.timeScale;
     }
 
     private void ToggleUI(InputAction.CallbackContext ctx)
     {
-        Debug.Log("´ò¿ª²Ëµ¥");
         isUIVisible = !isUIVisible;
-        uiCanvas.SetActive(isUIVisible);
 
         if (isUIVisible)
         {
-            // ¼ÆËãUIÎ»ÖÃ£ºÍæ¼ÒÇ°·½ + ¸ß¶ÈÆ«ÒÆ
-            Vector3 newPos = playerCamera.position +
-                            playerCamera.forward * displayDistance +
-                            Vector3.up * heightOffset;
+            if (vrPanel != null)
+            {
+                vrPanel.ShowPanel();
+            }
+            else
+            {
+                // å›é€€åˆ°åŸç‰ˆé€»è¾‘ï¼šæ‰‹åŠ¨å®šä½ + SetActive
+                PositionUI();
+                uiCanvas.SetActive(true);
+            }
 
-            uiCanvas.transform.position = newPos;
-
-            // ÈÃUIÊ¼ÖÕÃæÏòÍæ¼Ò
-            uiCanvas.transform.LookAt(playerCamera);
-            uiCanvas.transform.Rotate(0, 180f, 0); // ·­×ª±£Ö¤ÎÄ×ÖÕıÏò
-
-            // ÔİÍ£ÓÎÏ·Âß¼­
             if (pauseGameWhenOpen)
             {
-                previousTimeScale = Time.timeScale; // ±¸·İµ±Ç°Ê±¼äÁ÷ËÙ
-                Time.timeScale = 0f; // ÍêÈ«ÔİÍ£
-                //AudioListener.pause = true; // ÔİÍ£ÒôÆµ
+                previousTimeScale = Time.timeScale;
+                Time.timeScale = 0f;
             }
         }
         else
         {
-            // »Ö¸´ÓÎÏ·Âß¼­
+            if (vrPanel != null)
+                vrPanel.HidePanel();
+            else
+                uiCanvas.SetActive(false);
+
             if (pauseGameWhenOpen)
             {
-                Time.timeScale = previousTimeScale; // »Ö¸´Ô­Ê±¼äÁ÷ËÙ
-                //AudioListener.pause = false; // »Ö¸´ÒôÆµ
+                Time.timeScale = previousTimeScale;
             }
         }
     }
 
+    // åŸç‰ˆå®šä½é€»è¾‘ï¼ˆFeatureToggle å…³é—­æ—¶çš„å›é€€ï¼‰
+    private void PositionUI()
+    {
+        if (playerCamera == null) return;
+        uiCanvas.transform.position = playerCamera.position
+            + playerCamera.forward * 2f + Vector3.up * -0.3f;
+        uiCanvas.transform.LookAt(playerCamera);
+        uiCanvas.transform.Rotate(0, 180f, 0);
+    }
+
     void OnDestroy()
     {
-        // È·±£ÓÎÏ·×´Ì¬±»ÕıÈ·»Ö¸´
         if (isUIVisible && pauseGameWhenOpen)
         {
             Time.timeScale = previousTimeScale;
-            //AudioListener.pause = false;
         }
-
         menuAction.action.performed -= ToggleUI;
     }
-
-
 }

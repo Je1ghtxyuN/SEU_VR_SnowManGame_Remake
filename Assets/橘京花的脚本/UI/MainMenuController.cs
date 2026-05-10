@@ -21,16 +21,41 @@ public class MainMenuController : MonoBehaviour
 
     // --- 按钮事件绑定 ---
 
+    private bool UseVRPanel(GameObject panel) =>
+        panel != null && FeatureToggle.Instance != null && FeatureToggle.Instance.useVRUIPanel;
+
+    private void SwitchPanel(GameObject oldPanel, GameObject newPanel)
+    {
+        if (oldPanel != null)
+        {
+            var oldVRP = oldPanel.GetComponent<VRUIPanel>();
+            if (UseVRPanel(oldPanel) && oldVRP != null)
+                oldVRP.HidePanel(() => ActivatePanel(newPanel));
+            else
+            { oldPanel.SetActive(false); ActivatePanel(newPanel); }
+        }
+        else
+        {
+            ActivatePanel(newPanel);
+        }
+    }
+
     public void ShowDifficultyPanel()
     {
-        if (mainPanel != null) mainPanel.SetActive(false);
-        if (difficultyPanel != null) difficultyPanel.SetActive(true);
+        SwitchPanel(mainPanel, difficultyPanel);
     }
 
     public void ShowMainPanel()
     {
-        if (mainPanel != null) mainPanel.SetActive(true);
-        if (difficultyPanel != null) difficultyPanel.SetActive(false);
+        SwitchPanel(difficultyPanel, mainPanel);
+    }
+
+    private void ActivatePanel(GameObject panel)
+    {
+        if (panel == null) return;
+        var vrp = panel.GetComponent<VRUIPanel>();
+        if (UseVRPanel(panel) && vrp != null) vrp.ShowPanel();
+        else panel.SetActive(true);
     }
 
     // 选择难度并开始游戏

@@ -87,3 +87,8 @@ Packages/packages-lock.json
 
 # MMD4Mecanim (paid asset, DLL not committed)
 Assets/MMD4Mecanim/
+
+# Editor and test artifacts
+.vscode/
+Assets/Screenshots/
+Assets/Screenshots.meta
