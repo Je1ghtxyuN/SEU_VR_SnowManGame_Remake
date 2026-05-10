@@ -81,3 +81,9 @@ Assets/字体/ZiKuJiangHuGuFengTi-2 SDF 2.asset
 Assets/字体/ZiKuJiangHuGuFengTi-2 SDF 2.asset.meta
 Assets/MMD4Mecanim/Plugins/MMD4MecanimBulletPhysics/iOS/libBulletPhysics.a
 Assets/MMD4Mecanim/Plugins/MMD4MecanimBulletPhysics 2.75/iOS/libBulletPhysics.a
+
+# Package lock file (regenerated per platform)
+Packages/packages-lock.json
+
+# MMD4Mecanim (paid asset, DLL not committed)
+Assets/MMD4Mecanim/
