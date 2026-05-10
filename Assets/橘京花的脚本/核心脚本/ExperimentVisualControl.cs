@@ -8,6 +8,9 @@ public class ExperimentVisualControl : MonoBehaviour
 {
     public static ExperimentVisualControl Instance { get; private set; }
 
+    // 防止 AddComponent 触发 Awake 时的递归初始化
+    private static bool isInitializing = false;
+
     public enum ExperimentGroup
     {
         GroupA_FullExperience, // 实验组：全特效 + 全环境
@@ -21,14 +24,22 @@ public class ExperimentVisualControl : MonoBehaviour
 
     void Awake()
     {
+        // 如果是被 AddComponent 创建的（在另一个 Awake 中），跳过初始化
+        if (isInitializing)
+        {
+            return;
+        }
+
         if (Instance == null)
         {
             // 创建独立的持久化 GameObject，避免 DontDestroyOnLoad 连带其他组件（如 GameRoundManager）一起存活
+            isInitializing = true;
             var holder = new GameObject("ExperimentController");
             var ctrl = holder.AddComponent<ExperimentVisualControl>();
             ctrl.currentGroup = currentGroup;
             Instance = ctrl;
             DontDestroyOnLoad(holder);
+            isInitializing = false;
 
             // 移除当前组件（保留 GameManager 上的其他组件）
             Destroy(this);
