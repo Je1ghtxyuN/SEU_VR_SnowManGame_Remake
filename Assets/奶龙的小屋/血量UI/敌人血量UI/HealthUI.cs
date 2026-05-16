@@ -1,26 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using static System.Net.Mime.MediaTypeNames;
 
 public class HealthUI : MonoBehaviour
 {
     [Header("UI Components")]
-    [SerializeField] private UnityEngine.UI.Image healthFillImage; //ÑªÌõÌî³äÍ¼
-    [SerializeField] private GameObject healthBarObject; //Õû¸öÑªÌõ¶ÔÏó
+    [SerializeField] private UnityEngine.UI.Image healthFillImage; //Ñªï¿½ï¿½ï¿½ï¿½ï¿½Í¼
+    [SerializeField] private GameObject healthBarObject; //ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     [Header("Settings")]
-    [SerializeField] private Vector3 offset = new Vector3(0, 1.5f, 0); //ÑªÌõÔÚÍ·¶¥µÄÎ»ÖÃÆ«ÒÆ
+    [SerializeField] private Vector3 offset = new Vector3(0, 1.5f, 0); //Ñªï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½Æ«ï¿½ï¿½
  
-    private Transform targetTransform; //¸úËæµÄÄ¿±ê(µÐÈË»òÍæ¼Ò)
-    private Health healthSystem; //¹ØÁªµÄÉúÃüÖµÏµÍ³
+    private Transform targetTransform; //ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½(ï¿½ï¿½ï¿½Ë»ï¿½ï¿½ï¿½ï¿½)
+    private Health healthSystem; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÖµÏµÍ³
 
     public void Initialize(Transform target, Health health)
     {
         targetTransform = target;
         healthSystem = health;
 
-        //×¢²áÑªÁ¿±ä»¯ÊÂ¼þ
+        //×¢ï¿½ï¿½Ñªï¿½ï¿½ï¿½ä»¯ï¿½Â¼ï¿½
         healthSystem.OnHealthChanged += UpdateHealthBar;
         healthSystem.OnDeath += HideHealthBar;
 
@@ -29,12 +28,12 @@ public class HealthUI : MonoBehaviour
 
     private void Update()
     {
-        //¸üÐÂÑªÌõÎ»ÖÃ£¬Ê¹Æä¸úËæÄ¿±ê
+        //ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½Î»ï¿½Ã£ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½
         if (targetTransform != null)
         {
             transform.position = targetTransform.position + offset;
 
-            //Ê¹ÑªÌõÊ¼ÖÕ³¯ÏòÉãÏñ»ú
+            //Ê¹Ñªï¿½ï¿½Ê¼ï¿½Õ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             transform.rotation = Quaternion.LookRotation(
                 Camera.main.transform.forward,
                 Camera.main.transform.up
@@ -44,9 +43,9 @@ public class HealthUI : MonoBehaviour
 
     private void UpdateHealthBar()
     {
-        //¸üÐÂÑªÌõÌî³ä±ÈÀý
+        //ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         healthFillImage.fillAmount = healthSystem.GetHealthPercentage();
-        UnityEngine.Debug.Log("ÑªÌõui¸üÐÂ");
+        UnityEngine.Debug.Log("Ñªï¿½ï¿½uiï¿½ï¿½ï¿½ï¿½");
     }
 
     private IEnumerator ShowHealthBarTemporarily(float duration)
@@ -59,12 +58,12 @@ public class HealthUI : MonoBehaviour
     private void HideHealthBar()
     {
         healthBarObject.SetActive(false);
-        //¿ÉÌí¼ÓËÀÍö¶¯»­Ð§¹û
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     }
 
     void OnDestroy()
     {
-        //×¢ÏúÊÂ¼þ¼àÌý
+        //×¢ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
         if (healthSystem != null)
         {
             healthSystem.OnHealthChanged -= UpdateHealthBar;

@@ -1,29 +1,28 @@
 using UnityEngine;
 using UnityEngine.UI;
-using static System.Net.Mime.MediaTypeNames;
 
 public class FixedHealthUI : MonoBehaviour
 {
     [Header("UI Components")]
-    [SerializeField] private UnityEngine.UI.Image healthFillImage; // ÑªÌõÌî³äÍ¼
-    [SerializeField] private UnityEngine.UI.Image healthBackground; // ÑªÌõ±³¾°
+    [SerializeField] private UnityEngine.UI.Image healthFillImage; // Ñªï¿½ï¿½ï¿½ï¿½ï¿½Í¼
+    [SerializeField] private UnityEngine.UI.Image healthBackground; // Ñªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     [Header("Color Settings")]
-    [SerializeField] private Color fullHealthColor = Color.red; // ÂúÑªÑÕÉ«
-    [SerializeField] private Color lowHealthColor = Color.blue; // µÍÑªÑÕÉ«
-    [SerializeField] private float criticalThreshold = 0.2f; // ÑÕÉ«½¥±äÁÙ½çµã
+    [SerializeField] private Color fullHealthColor = Color.red; // ï¿½ï¿½Ñªï¿½ï¿½É«
+    [SerializeField] private Color lowHealthColor = Color.blue; // ï¿½ï¿½Ñªï¿½ï¿½É«
+    [SerializeField] private float criticalThreshold = 0.2f; // ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½ï¿½Ù½ï¿½ï¿½
 
-    private Health healthSystem; // ¹ØÁªµÄÉúÃüÖµÏµÍ³
+    private Health healthSystem; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÖµÏµÍ³
 
     public void Initialize(Health health)
     {
         healthSystem = health;
 
-        // ×¢²áÑªÁ¿±ä»¯ÊÂ¼þ
+        // ×¢ï¿½ï¿½Ñªï¿½ï¿½ï¿½ä»¯ï¿½Â¼ï¿½
         healthSystem.OnHealthChanged += UpdateHealthBar;
         healthSystem.OnDeath += HandleDeath;
 
-        // ³õÊ¼¸üÐÂ
+        // ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½
         UpdateHealthBar();
     }
 
@@ -31,42 +30,42 @@ public class FixedHealthUI : MonoBehaviour
     {
         if (healthSystem == null || healthFillImage == null) return;
 
-        // ¸üÐÂÑªÌõÌî³ä±ÈÀý
+        // ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         float healthPercent = healthSystem.GetHealthPercentage();
         healthFillImage.fillAmount = healthPercent;
 
-        // ¸ù¾ÝÑªÁ¿°Ù·Ö±È¸üÐÂÑÕÉ«
+        // ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½ï¿½Ù·Ö±È¸ï¿½ï¿½ï¿½ï¿½ï¿½É«
         UpdateHealthColor(healthPercent);
     }
 
     private void UpdateHealthColor(float healthPercent)
     {
-        // ÏßÐÔ²åÖµ¼ÆËãÑÕÉ«£¨À¶µ½ºì½¥±ä£©
+        // ï¿½ï¿½ï¿½Ô²ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì½¥ï¿½ä£©
         if (healthPercent > criticalThreshold)
         {
-            // Ö±½ÓÊ¹ÓÃ±ÈÀý£º¸ßÑªÁ¿¡ú½Ó½ü1£¨ºìÉ«£©£¬µÍÑªÁ¿¡ú½Ó½ü0£¨À¶É«£©
+            // Ö±ï¿½ï¿½Ê¹ï¿½Ã±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½ï¿½ï¿½ï¿½Ó½ï¿½1ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½ï¿½ï¿½ï¿½Ó½ï¿½0ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½
             float lerpValue = healthPercent;
             healthFillImage.color = Color.Lerp(lowHealthColor, fullHealthColor, lerpValue);
         }
         else
         {
-            // ÁÙ½çÖµÒÔÏÂ±£³ÖÀ¶É«
+            // ï¿½Ù½ï¿½Öµï¿½ï¿½ï¿½Â±ï¿½ï¿½ï¿½ï¿½ï¿½É«
             healthFillImage.color = lowHealthColor;
         }
     }
 
     private void HandleDeath()
     {
-        // ËÀÍöÊ±Òþ²ØÑªÌõ»òÏÔÊ¾ÌØÊâÐ§¹û
+        // ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
         healthFillImage.fillAmount = 0;
         healthFillImage.color = Color.gray;
 
-        // ¿ÉÌí¼ÓËÀÍö¶¯»­Ð§¹û
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     }
 
     void OnDestroy()
     {
-        // ×¢ÏúÊÂ¼þ¼àÌý
+        // ×¢ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
         if (healthSystem != null)
         {
             healthSystem.OnHealthChanged -= UpdateHealthBar;

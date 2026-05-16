@@ -35,11 +35,18 @@ public class IceCrystalEffectSystem : MonoBehaviour
             audioSource.PlayOneShot(collectSound, collectVolume);
         }
 
-        // ⭐ 修改：仅在实验组播放视觉特效
+        // 仅在实验组播放视觉特效
         if (ExperimentVisualControl.Instance == null || ExperimentVisualControl.Instance.ShouldShowVisuals())
         {
             if (iceCrystalParticles != null) iceCrystalParticles.Play();
             if (iceVisualEffect != null) iceVisualEffect.ActivateIceEffect();
+
+            // 霜冻镜头特效（受 FeatureToggle 控制）
+            if (FrostScreenEffect.Instance != null)
+            {
+                if (FeatureToggle.Instance == null || FeatureToggle.Instance.useLensFrost)
+                    FrostScreenEffect.Instance.TriggerFrost();
+            }
 
             if (!hasPlayedFirstAbsorb && PetVoiceSystem.Instance != null)
             {

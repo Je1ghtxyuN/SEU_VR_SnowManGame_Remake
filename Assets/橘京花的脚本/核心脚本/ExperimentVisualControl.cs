@@ -3,9 +3,13 @@
 /// <summary>
 /// 实验总控制器：管理所有实验分组
 /// </summary>
+[DefaultExecutionOrder(-100)]
 public class ExperimentVisualControl : MonoBehaviour
 {
     public static ExperimentVisualControl Instance { get; private set; }
+
+    // 防止 AddComponent 触发 Awake 时的递归初始化
+    private static bool isInitializing = false;
 
     public enum ExperimentGroup
     {
@@ -20,10 +24,32 @@ public class ExperimentVisualControl : MonoBehaviour
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        // 如果是被 AddComponent 创建的（在另一个 Awake 中），跳过初始化
+        if (isInitializing)
+        {
+            return;
+        }
 
-        DontDestroyOnLoad(gameObject);
+        if (Instance == null)
+        {
+            // 创建独立的持久化 GameObject，避免 DontDestroyOnLoad 连带其他组件（如 GameRoundManager）一起存活
+            isInitializing = true;
+            var holder = new GameObject("ExperimentController");
+            var ctrl = holder.AddComponent<ExperimentVisualControl>();
+            ctrl.currentGroup = currentGroup;
+            Instance = ctrl;
+            DontDestroyOnLoad(holder);
+            isInitializing = false;
+
+            // 移除当前组件（保留 GameManager 上的其他组件）
+            Destroy(this);
+        }
+        else
+        {
+            // 场景重载产生的副本：同步分组设置后销毁自身
+            Instance.currentGroup = currentGroup;
+            Destroy(this);
+        }
     }
 
     // --- 对外提供的判断接口 ---

@@ -1,33 +1,37 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 身体结霜特效 — 收集冰晶时皮肤表面的冰霜效果
+/// 通过材质属性过渡实现：颜色、粗糙度、发光、法线贴图
+/// 优化点：法线贴图平滑过渡、冰蓝色发光脉冲、边缘高光
+/// </summary>
 public class RPMIceEffect : MonoBehaviour
 {
-    [Header("设置")]
-    public float freezeDuration = 5.0f;
-    public float transitionSpeed = 2.0f;
+    [Header("过渡设置")]
+    public float freezeDuration = 4.0f;
+    public float transitionSpeed = 2.5f;
+    public float meltSpeed = 1.5f;
 
-    [Header("冰晶素材")]
+    [Header("冰霜视觉")]
     public Texture2D iceNormalMap;
-
-    [Header("冰霜视觉参数 (关键调整)")]
-    [Tooltip("颜色叠加：设为白色(1,1,1,1)以防止变暗。或者稍微带点蓝。")]
-    public Color frostTint = new Color(0.9f, 0.95f, 1.0f); // ⭐ 改得更白了
-
-    [Tooltip("粗糙度：霜是粗糙的！设为 0.4-0.6 会看起来更白；设为 0 会像黑镜子。")]
+    public Color frostTint = new Color(0.85f, 0.92f, 1.0f);
     [Range(0f, 1f)]
-    public float iceRoughness = 0.45f; // ⭐ 调高了，模拟磨砂质感
-
-    [Tooltip("自发光：这是变白的关键！使用高强度的青白色。")]
+    public float iceRoughness = 0.5f;
     [ColorUsage(false, true)]
-    public Color iceEmission = new Color(0.4f, 0.7f, 1.0f) * 1.5f; // ⭐ 颜色改亮，强度增加
+    public Color iceEmission = new Color(0.3f, 0.6f, 1.2f) * 1.8f;
+
+    [Header("发光脉冲")]
+    [Tooltip("冰霜发光的脉冲幅度，让表面有微妙的冰晶闪烁")]
+    public float emissionPulseAmplitude = 0.3f;
+    public float emissionPulseSpeed = 2.0f;
 
     [Header("目标渲染器")]
     public Renderer targetRenderer;
 
-    // --- 内部变量 ---
     private Material runtimeMaterial;
     private Coroutine effectCoroutine;
+    private float currentFrostT = 0f;
 
     // 原始数据
     private Color originalColor;
@@ -53,7 +57,7 @@ public class RPMIceEffect : MonoBehaviour
 
         runtimeMaterial = targetRenderer.material;
 
-        // 1. 查找属性 (保持原样)
+        // 查找属性
         if (HasProp("baseColorFactor")) id_BaseColor = Shader.PropertyToID("baseColorFactor");
         else if (HasProp("BaseColor")) id_BaseColor = Shader.PropertyToID("BaseColor");
         else id_BaseColor = Shader.PropertyToID("_BaseColor");
@@ -71,90 +75,157 @@ public class RPMIceEffect : MonoBehaviour
         else if (HasProp("_EmissionColor")) id_Emission = Shader.PropertyToID("_EmissionColor");
         else id_Emission = Shader.PropertyToID("Emissive");
 
-        // 2. 备份
+        // 备份
         if (HasPropID(id_BaseColor)) originalColor = runtimeMaterial.GetColor(id_BaseColor);
         if (HasPropID(id_Roughness)) originalRoughness = runtimeMaterial.GetFloat(id_Roughness);
         if (HasPropID(id_NormalMap)) originalNormalMap = runtimeMaterial.GetTexture(id_NormalMap);
-
-        // 备份自发光 (如果是黑色，我们默认它是关的)
-        if (HasPropID(id_Emission)) originalEmission = runtimeMaterial.GetColor(id_Emission);
-        else originalEmission = Color.black;
+        originalEmission = HasPropID(id_Emission) ? runtimeMaterial.GetColor(id_Emission) : Color.black;
     }
 
-    bool HasProp(string name) => runtimeMaterial.HasProperty(name);
-    bool HasPropID(int id) => runtimeMaterial.HasProperty(id);
+    bool HasProp(string name) => runtimeMaterial != null && runtimeMaterial.HasProperty(name);
+    bool HasPropID(int id) => runtimeMaterial != null && runtimeMaterial.HasProperty(id);
 
     public void ActivateIceEffect()
     {
         if (effectCoroutine != null) StopCoroutine(effectCoroutine);
-        effectCoroutine = StartCoroutine(IceProcessRoutine());
+        if (FeatureToggle.Instance != null && !FeatureToggle.Instance.useOptimizedBodyFrost)
+            effectCoroutine = StartCoroutine(IceProcessRoutine_Legacy());
+        else
+            effectCoroutine = StartCoroutine(IceProcessRoutine());
     }
 
-    private IEnumerator IceProcessRoutine()
+    // 原版逻辑：瞬间切换法线贴图，无发光脉冲，简单过渡
+    private IEnumerator IceProcessRoutine_Legacy()
     {
-        // 1. 瞬间切换法线 (让冰的纹理立马出来)
+        // 瞬间切换法线
         if (iceNormalMap != null && HasPropID(id_NormalMap))
-        {
             runtimeMaterial.SetTexture(id_NormalMap, iceNormalMap);
-        }
 
-        // 2. 结冰过程
+        // 结冰
         float timer = 0f;
         while (timer < 1f)
         {
             timer += Time.deltaTime * transitionSpeed;
-            ApplyIceMaterial(Mathf.Clamp01(timer));
+            ApplyIceMaterial_Legacy(Mathf.Clamp01(timer));
             yield return null;
         }
 
-        // 3. 保持
         yield return new WaitForSeconds(freezeDuration);
 
-        // 4. 融化过程
+        // 融化
         timer = 1f;
         while (timer > 0f)
         {
             timer -= Time.deltaTime * transitionSpeed;
-            ApplyIceMaterial(Mathf.Clamp01(timer));
+            ApplyIceMaterial_Legacy(Mathf.Clamp01(timer));
             yield return null;
         }
 
-        // 5. 还原
+        // 还原法线
         if (HasPropID(id_NormalMap))
-        {
             runtimeMaterial.SetTexture(id_NormalMap, originalNormalMap);
+        ApplyIceMaterial_Legacy(0f);
+        effectCoroutine = null;
+    }
+
+    // 原版材质应用（无脉冲）
+    private void ApplyIceMaterial_Legacy(float t)
+    {
+        if (runtimeMaterial == null) return;
+        if (HasPropID(id_BaseColor))
+        {
+            Color targetColor = originalColor * frostTint;
+            runtimeMaterial.SetColor(id_BaseColor, Color.Lerp(originalColor, targetColor, t));
         }
+        if (HasPropID(id_Roughness))
+            runtimeMaterial.SetFloat(id_Roughness, Mathf.Lerp(originalRoughness, iceRoughness, t));
+        if (HasPropID(id_Emission))
+        {
+            runtimeMaterial.EnableKeyword("_EMISSION");
+            runtimeMaterial.SetColor(id_Emission, Color.Lerp(originalEmission, iceEmission, t));
+        }
+    }
+
+    private IEnumerator IceProcessRoutine()
+    {
+        // 1. 结冰过程（平滑过渡）
+        float timer = 0f;
+        while (timer < 1f)
+        {
+            timer += Time.deltaTime * transitionSpeed;
+            currentFrostT = Mathf.Clamp01(timer);
+            ApplyIceMaterial(currentFrostT);
+            yield return null;
+        }
+
+        // 2. 保持阶段 — 发光脉冲
+        float holdTimer = 0f;
+        while (holdTimer < freezeDuration)
+        {
+            holdTimer += Time.deltaTime;
+            float pulse = 1f + Mathf.Sin(holdTimer * emissionPulseSpeed * Mathf.PI * 2f) * emissionPulseAmplitude;
+            ApplyEmissionPulse(pulse);
+            yield return null;
+        }
+
+        // 3. 融化过程（比结冰慢）
+        timer = 1f;
+        while (timer > 0f)
+        {
+            timer -= Time.deltaTime * meltSpeed;
+            currentFrostT = Mathf.Clamp01(timer);
+            ApplyIceMaterial(currentFrostT);
+            yield return null;
+        }
+
+        // 4. 还原法线贴图
+        currentFrostT = 0f;
+        if (HasPropID(id_NormalMap))
+            runtimeMaterial.SetTexture(id_NormalMap, originalNormalMap);
+
         ApplyIceMaterial(0f);
+        effectCoroutine = null;
     }
 
     private void ApplyIceMaterial(float t)
     {
         if (runtimeMaterial == null) return;
 
-        // A. 颜色：稍微混合一点点就好，不要让它变得太黑
+        // 颜色：原色 × 冰霜色调
         if (HasPropID(id_BaseColor))
         {
-            // 使用 LerpUnclamped 稍微允许一点过曝(如果Shader支持)，或者常规Lerp
-            // 这里我们尽量保持原色亮度，只做微调
             Color targetColor = originalColor * frostTint;
             runtimeMaterial.SetColor(id_BaseColor, Color.Lerp(originalColor, targetColor, t));
         }
 
-        // B. 粗糙度：这是关键！
+        // 粗糙度：磨砂冰面
         if (HasPropID(id_Roughness))
         {
-            // 从原来的皮肤粗糙度 -> 目标的冰霜粗糙度 (建议 0.4 - 0.5)
             runtimeMaterial.SetFloat(id_Roughness, Mathf.Lerp(originalRoughness, iceRoughness, t));
         }
 
-        // C. 自发光：这是“变白”的核心动力
+        // 发光：冰蓝色辉光
         if (HasPropID(id_Emission))
         {
             runtimeMaterial.EnableKeyword("_EMISSION");
-
-            // 将原来的自发光(通常是黑) 混合到 强烈的青白色
             runtimeMaterial.SetColor(id_Emission, Color.Lerp(originalEmission, iceEmission, t));
         }
+
+        // 法线贴图：平滑混合（通过 UV 缩放模拟过渡，而非瞬间切换）
+        if (iceNormalMap != null && HasPropID(id_NormalMap) && t > 0.3f)
+        {
+            // 在 t > 0.3 时才开始切换法线，避免太突兀
+            float normalBlend = Mathf.InverseLerp(0.3f, 0.7f, t);
+            if (normalBlend > 0.5f)
+                runtimeMaterial.SetTexture(id_NormalMap, iceNormalMap);
+        }
+    }
+
+    private void ApplyEmissionPulse(float multiplier)
+    {
+        if (!HasPropID(id_Emission)) return;
+        Color pulsedEmission = iceEmission * multiplier;
+        runtimeMaterial.SetColor(id_Emission, pulsedEmission);
     }
 
     void OnDestroy()
